@@ -1,23 +1,57 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  background: #f5f5f5;
+}
+
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #f2f2f2;
-  padding: 10px 20px;
-  border-bottom: 2px solid #ccc;
+  background: #fff;
+  padding: 20px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-.logo {
-  height: 40px;
+.nav-items ul {
+  list-style: none;
+  display: flex;
+  gap: 20px;
 }
 
-.search {
-  width: 40%;
-  padding: 8px;
-  font-size: 16px;
+.card {
+  background: white;
+  margin: 20px;
+  padding: 15px;
+  width: 250px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border-radius: 8px;
 }
 
-.user-icon {
-  height: 35px;
-  border-radius: 50%;
+.restaurant-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.footer {
+  text-align: center;
+  justify-content: space-between;
+  padding: 20px;
+  background: hsl(0, 0%, 100%);
+  position: relative;
+  bottom: 0;
+  width: 100%;
+}
+.shimmer-container{
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.shimmer-card {
+  width: 250px;
+  height: 300px;
+  margin: 20px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
 }

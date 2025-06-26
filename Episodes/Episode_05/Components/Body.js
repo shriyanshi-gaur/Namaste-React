@@ -1,25 +1,55 @@
 import { useState, useEffect } from "react";
 import RestaurantCard from "./RestaurantCard";
-import { restaurantList } from "../utils/mockData";
+import Shimmer from "./Shimmer";
 
 const Body = () => {
   const [searchText, setSearchText] = useState("");
-  const [allRestaurants, setAllRestaurants] = useState(restaurantList);
-  const [filteredRestaurants, setFilteredRestaurants] = useState(restaurantList);
-  const [user, setUser] = useState({
-    name: "",
-    email: "",
-  });
+  const [allRestaurants, setAllRestaurants] = useState([]);
+  const [filteredRestaurants, setFilteredRestaurants] = useState([]);
 
-  const filterData = (searchText, restaurants) => {
+  const filterData = (text, restaurants) => {
     return restaurants.filter((restaurant) =>
-      restaurant.card?.card?.info?.name?.toLowerCase().includes(searchText.toLowerCase())
+      restaurant?.info?.name?.toLowerCase().includes(text.toLowerCase())
     );
   };
 
-  return (
+  const fetchData = async () => {
+  try {
+    const response = await fetch(
+      "https://swiggy-api-4c740.web.app/swiggy-api.json"
+    );
+
+    console.log("Response:", response); // 👀
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const json = await response.json();
+    console.log("Fetched JSON:", json); // 👀
+
+    const restaurantData =
+      json?.data?.cards?.find(
+        (card) =>
+          card?.card?.card?.id === "restaurant_grid_listing_v2" &&
+          card?.card?.card?.gridElements?.infoWithStyle?.restaurants
+      )?.card?.card?.gridElements?.infoWithStyle?.restaurants || [];
+
+    setAllRestaurants(restaurantData);
+    setFilteredRestaurants(restaurantData);
+  } catch (err) {
+    console.error("Error fetching data:", err);
+  }
+};
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+ return allRestaurants.length === 0 ? (
+  <Shimmer />
+) : (
     <div className="body">
-      {/* Search Bar and User Inputs */}
+      {/* Search and Filter */}
       <div className="search-container p-5 bg-pink-50 my-5">
         <input
           data-testid="search-input"
@@ -39,17 +69,12 @@ const Body = () => {
         >
           Search
         </button>
-        
-      </div>
 
-      {/* Top Rated Filter */}
-      <div className="filter">
         <button
-          className="filter-btn p-2 bg-yellow-200 rounded-md m-2"
+          className="p-2 m-2 bg-yellow-400 hover:bg-yellow-600 text-black rounded-md"
           onClick={() => {
             const topRated = allRestaurants.filter(
-              (restaurant) =>
-                parseFloat(restaurant.card?.card?.info?.avgRating) > 4.4
+              (res) => parseFloat(res?.info?.avgRating) > 4.1
             );
             setFilteredRestaurants(topRated);
           }}
@@ -58,13 +83,15 @@ const Body = () => {
         </button>
       </div>
 
-      {/* Restaurant List */}
-      <div className="restaurant-list flex flex-wrap justify-center">
+      {/* Restaurant Cards */}
+      <div className="restaurant-list flex flex-wrap justify-center gap-4">
         {filteredRestaurants.length === 0 ? (
-          <h2 className="text-center text-red-500">No restaurants match your search</h2>
+          <h2 className="text-center text-red-500 text-xl">
+            No restaurants match your search.
+          </h2>
         ) : (
           filteredRestaurants.map((restaurant) => {
-            const info = restaurant.card?.card?.info;
+            const info = restaurant.info;
             return <RestaurantCard key={info.id} {...info} />;
           })
         )}
