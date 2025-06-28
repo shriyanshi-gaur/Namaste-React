@@ -3,18 +3,47 @@ import ReactDOM from "react-dom/client";
 import Header from "./Components/Header";
 import Body from "./Components/Body";   
 import Footer from "./Components/Footer";
-
-
+import { createBrowserRouter, RouterProvider,Outlet } from "react-router-dom";
+import About from "./Components/About";
+import Contact from "./Components/Contact"; 
+import Error from "./Components/Error"; 
 // Assuming you have a styles.css file for styling
 const AppLayout = () => {
   return (
-    <React.Fragment>
+    <div className="app">
       <Header />
-      <Body />
+      <Outlet />
       <Footer />
-    </React.Fragment>
+    </div>
   );
 };
 
+const appRouter= createBrowserRouter([
+  {
+    path: "/",
+    element:<AppLayout/>,
+    children: [
+      {
+            path: "/",
+            element:<Body/>,
+            errorElement: <Error/>
+        },
+        {
+            path: "/about",
+            element:<About/>,
+            errorElement: <Error/>
+        },
+       {
+           path: "/contact",
+            element:<Contact/>,
+            errorElement: <Error/>
+       }
+
+    ]
+    ,
+    errorElement: <Error/>
+  }
+
+])
 const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(<AppLayout />);
+root.render(<RouterProvider router={appRouter} />);
