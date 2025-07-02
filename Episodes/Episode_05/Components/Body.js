@@ -2,98 +2,82 @@ import { useState, useEffect } from "react";
 import RestaurantCard from "./RestaurantCard";
 import Shimmer from "./Shimmer";
 
+
 const Body = () => {
   const [searchText, setSearchText] = useState("");
   const [allRestaurants, setAllRestaurants] = useState([]);
   const [filteredRestaurants, setFilteredRestaurants] = useState([]);
 
-  const filterData = (text, restaurants) => {
-    return restaurants.filter((restaurant) =>
-      restaurant?.info?.name?.toLowerCase().includes(text.toLowerCase())
-    );
-  };
-
   const fetchData = async () => {
-  try {
-    const response = await fetch(
-      "https://swiggy-api-4c740.web.app/swiggy-api.json"
-    );
+    try {
+      const res = await fetch(
+        "https://www.swiggy.com/dapi/restaurants/list/v5?lat=26.46310&lng=80.34790&is-seo-homepage-enabled=true&page_type=DESKTOP_WEB_LISTING"
+      );
+      const json = await res.json();
 
-    console.log("Response:", response); // 👀
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const json = await response.json();
-    console.log("Fetched JSON:", json); // 👀
-
-    const restaurantData =
-      json?.data?.cards?.find(
+      const restaurants = json?.data?.cards?.find(
         (card) =>
-          card?.card?.card?.id === "restaurant_grid_listing_v2" &&
           card?.card?.card?.gridElements?.infoWithStyle?.restaurants
       )?.card?.card?.gridElements?.infoWithStyle?.restaurants || [];
 
-    setAllRestaurants(restaurantData);
-    setFilteredRestaurants(restaurantData);
-  } catch (err) {
-    console.error("Error fetching data:", err);
-  }
-};
+      setAllRestaurants(restaurants);
+      setFilteredRestaurants(restaurants);
+    } catch (err) {
+      console.error("Error fetching restaurant data:", err);
+    }
+  };
+
   useEffect(() => {
     fetchData();
   }, []);
 
- return allRestaurants.length === 0 ? (
-  <Shimmer />
-) : (
+  const handleSearch = () => {
+    const filtered = allRestaurants.filter((r) =>
+      r?.info?.name?.toLowerCase().includes(searchText.toLowerCase())
+    );
+    setFilteredRestaurants(filtered);
+  };
+
+  const handleTopRated = () => {
+    const filtered = allRestaurants.filter(
+      (r) => parseFloat(r?.info?.avgRating) > 4.4
+    );
+    setFilteredRestaurants(filtered);
+  };
+
+  return allRestaurants.length === 0 ? (
+    <Shimmer />
+  ) : (
     <div className="body">
-      {/* Search and Filter */}
+      {/* Search & Filter */}
       <div className="search-container p-5 bg-pink-50 my-5">
         <input
-          data-testid="search-input"
           type="text"
-          className="focus:bg-green-200 p-2 m-2"
+          className="p-2 m-2 focus:bg-green-200"
           placeholder="Search"
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
         />
-        <button
-          data-testid="search-btn"
-          className="p-2 m-2 bg-purple-900 hover:bg-gray-500 text-white rounded-md"
-          onClick={() => {
-            const data = filterData(searchText, allRestaurants);
-            setFilteredRestaurants(data);
-          }}
-        >
+        <button className="p-2 m-2 bg-purple-800 text-white rounded" onClick={handleSearch}>
           Search
         </button>
-
-        <button
-          className="p-2 m-2 bg-yellow-400 hover:bg-yellow-600 text-black rounded-md"
-          onClick={() => {
-            const topRated = allRestaurants.filter(
-              (res) => parseFloat(res?.info?.avgRating) > 4.1
-            );
-            setFilteredRestaurants(topRated);
-          }}
-        >
-          Top Rated Restaurants
+        <button className="p-2 m-2 bg-yellow-400 text-black rounded" onClick={handleTopRated}>
+          Top Rated
         </button>
       </div>
 
       {/* Restaurant Cards */}
       <div className="restaurant-list flex flex-wrap justify-center gap-4">
         {filteredRestaurants.length === 0 ? (
-          <h2 className="text-center text-red-500 text-xl">
-            No restaurants match your search.
-          </h2>
+          <h2 className="text-red-500 text-xl">No restaurants found.</h2>
         ) : (
-          filteredRestaurants.map((restaurant) => {
-            const info = restaurant.info;
-            return <RestaurantCard key={info.id} {...info} />;
-          })
+          filteredRestaurants.map((r) => (
+           <RestaurantCard
+  key={r.info.id}
+  id={r.info.id}
+  {...r.info}
+/>
+          ))
         )}
       </div>
     </div>
